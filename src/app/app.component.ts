@@ -7,6 +7,8 @@ import {
   Validators,
 } from '@angular/forms';
 import Validation from './utils/validation';
+import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -23,10 +25,12 @@ export class AppComponent {
     acceptTerms: new FormControl(false),
   });
   submitted = false;
+  _auth: any;
 
-  constructor(private formBuilder: FormBuilder) {}
+  constructor(private formBuilder: FormBuilder,_auth:AuthService,private route : Router) {}
 
   ngOnInit(): void {
+    
     this.form = this.formBuilder.group(
       {
         fullname: ['', Validators.required],
@@ -59,15 +63,22 @@ export class AppComponent {
   get f(): { [key: string]: AbstractControl } {
     return this.form.controls;
   }
-
+  response_data : any;
   onSubmit(): void {
     this.submitted = true;
 
-    if (this.form.invalid) {
-      return;
+    if (this.form.valid) {
+      console.log(this.form.value);
+      this._auth.login(this.form.value).subscribe((response: any) => {
+        if ( response != null){
+          this.response_data = response;
+        }
+        this.route.navigate(['/user'])
+      }, (error: any) => {
+        console.log('error from login',error)
+      }
+      )
     }
-
-    console.log(JSON.stringify(this.form.value, null, 2));
   }
 
   onReset(): void {
